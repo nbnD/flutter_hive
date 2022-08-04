@@ -19,17 +19,20 @@ class DataModelAdapter extends TypeAdapter<DataModel> {
     return DataModel(
       item: fields[0] as String?,
       quantity: fields[1] as int?,
+      metrics: fields[2] as String?,
     );
   }
 
   @override
   void write(BinaryWriter writer, DataModel obj) {
     writer
-      ..writeByte(2)
+      ..writeByte(3)
       ..writeByte(0)
       ..write(obj.item)
       ..writeByte(1)
-      ..write(obj.quantity);
+      ..write(obj.quantity)
+      ..writeByte(2)
+      ..write(obj.metrics);
   }
 
   @override

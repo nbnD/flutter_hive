@@ -19,12 +19,17 @@ class _HomePageState extends State<HomePage> {
   var box;
 
   var items = [];
+  var selectedValue;
+  var metrics = ["kg", "ltr", "gram", "dozen", "nos"];
 
   void getItems() async {
     box = await Hive.openBox('hive_box'); // open box
 
     setState(() {
-      items = box.values.toList().reversed.toList();  //reversed so as to keep the new data to the top
+      items = box.values
+          .toList()
+          .reversed
+          .toList(); //reversed so as to keep the new data to the top
     });
   }
 
@@ -48,7 +53,13 @@ class _HomePageState extends State<HomePage> {
                 return Card(
                   child: ListTile(
                     title: Text(items[index].item!),
-                    subtitle: Text(items[index].quantity.toString()),
+                    subtitle: Row(
+                      children: [
+                        Text(items[index].quantity.toString()),
+                        const SizedBox(width:5),
+                        Text(items[index].metrics.toString())
+                      ],
+                    ),
                     trailing: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
@@ -83,8 +94,10 @@ class _HomePageState extends State<HomePage> {
     if (itemKey != null) {
       _itemController.text = items[index].item;
       _qtyController.text = items[index].quantity.toString();
+      selectedValue = items[index].metrics;
     }
     showModalBottomSheet(
+        isDismissible: false,
         context: context,
         isScrollControlled: true,
         builder: (_) => Container(
@@ -97,7 +110,7 @@ class _HomePageState extends State<HomePage> {
               key: formGlobalKey,
               child: Column(
                 mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.end,
+               
                 children: [
                   TextFormField(
                     controller: _itemController,
@@ -117,34 +130,74 @@ class _HomePageState extends State<HomePage> {
                     keyboardType: TextInputType.number,
                     decoration: const InputDecoration(hintText: 'Quantity'),
                   ),
-                  const SizedBox(
-                    height: 20,
-                  ),
-                  ElevatedButton(
-                    onPressed: () async {
-                      if (formGlobalKey.currentState!.validate()) {
-                        box = await Hive.openBox('hive_box');
-                        DataModel dataModel = DataModel(
-                            item: _itemController.text,
-                            quantity: int.parse(_qtyController.text));
-                        if (itemKey == null) {  //if the itemKey is null it means we are creating new data
-                          box.add(dataModel);
-                        } else { //if itemKey is present we update the data
-                          box.put(itemKey, dataModel);
-                        }
-
-                        setState(() {
-                          _itemController.clear();
-                          _qtyController.clear();
-                        });
-                        //to get refreshedData
-                        getItems();
-                        
-                      }
-                      // Close the bottom sheet
-                      Navigator.of(context).pop();
+                  const SizedBox(height: 20),
+                  DropdownButtonFormField(
+                    isExpanded: true,
+                    decoration: const InputDecoration(
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.all(
+                          Radius.circular(0.0),
+                        ),
+                      ),
+                    ),
+                    hint: const Text("Select Metrics"),
+                    value: selectedValue,
+                    onChanged: (newValue) {
+                      setState(() {
+                        selectedValue = newValue;
+                      });
                     },
-                    child: Text(itemKey == null ? 'Create New' : 'Update'),
+                    validator: (newValue) {
+                      if (selectedValue == null) return "Field is empty";
+                    },
+                    items: metrics.map((item) {
+                      return DropdownMenuItem(
+                        value: item,
+                        child: Text(item),
+                      );
+                    }).toList(),
+                  ),
+                  const SizedBox(height: 20),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      ElevatedButton(
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                          },
+                          style: ElevatedButton.styleFrom(primary: Colors.red),
+                          child: const Text("Exit")),
+                      ElevatedButton(
+                        onPressed: () async {
+                          if (formGlobalKey.currentState!.validate()) {
+                            box = await Hive.openBox('hive_box');
+                            DataModel dataModel = DataModel(
+                                item: _itemController.text,
+                                quantity: int.parse(_qtyController.text),
+                                metrics: selectedValue);
+                            if (itemKey == null) {
+                              //if the itemKey is null it means we are creating new data
+                              box.add(dataModel);
+                              Navigator.of(context).pop();
+                            } else {
+                              //if itemKey is present we update the data
+                              box.put(itemKey, dataModel);
+                              Navigator.of(context).pop();
+                            }
+
+                            setState(() {
+                              _itemController.clear();
+                              _qtyController.clear();
+                              selectedValue = null;
+                            });
+                            //to get refreshedData
+                            getItems();
+                          }
+                          // Close the bottom sheet
+                        },
+                        child: Text(itemKey == null ? 'Create New' : 'Update'),
+                      ),
+                    ],
                   ),
                   const SizedBox(
                     height: 15,

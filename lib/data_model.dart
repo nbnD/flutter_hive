@@ -8,6 +8,8 @@ class DataModel extends HiveObject{
   final String? item;
   @HiveField(1)
   final int? quantity;
+  @HiveField(2)
+  final String? metrics;
 
-  DataModel({this.item, this.quantity});
+  DataModel({this.item, this.quantity,this.metrics});
 }
