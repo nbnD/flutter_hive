@@ -56,7 +56,7 @@ class _HomePageState extends State<HomePage> {
                     subtitle: Row(
                       children: [
                         Text(items[index].quantity.toString()),
-                        const SizedBox(width:5),
+                        const SizedBox(width: 5),
                         Text(items[index].metrics.toString())
                       ],
                     ),
@@ -110,12 +110,12 @@ class _HomePageState extends State<HomePage> {
               key: formGlobalKey,
               child: Column(
                 mainAxisSize: MainAxisSize.min,
-               
                 children: [
                   TextFormField(
                     controller: _itemController,
                     validator: (value) {
                       if (value!.isEmpty) return "Required Field";
+                      return null;
                     },
                     decoration: const InputDecoration(hintText: 'Name'),
                   ),
@@ -126,6 +126,7 @@ class _HomePageState extends State<HomePage> {
                     controller: _qtyController,
                     validator: (value) {
                       if (value!.isEmpty) return "Required Field";
+                      return null;
                     },
                     keyboardType: TextInputType.number,
                     decoration: const InputDecoration(hintText: 'Quantity'),
@@ -149,6 +150,7 @@ class _HomePageState extends State<HomePage> {
                     },
                     validator: (newValue) {
                       if (selectedValue == null) return "Field is empty";
+                      return null;
                     },
                     items: metrics.map((item) {
                       return DropdownMenuItem(
@@ -165,7 +167,10 @@ class _HomePageState extends State<HomePage> {
                           onPressed: () {
                             Navigator.of(context).pop();
                           },
-                          style: ElevatedButton.styleFrom(primary: Colors.red),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.red,
+                            foregroundColor: Colors.white,
+                          ),
                           child: const Text("Exit")),
                       ElevatedButton(
                         onPressed: () async {
@@ -177,6 +182,12 @@ class _HomePageState extends State<HomePage> {
                                 metrics: selectedValue);
                             if (itemKey == null) {
                               //if the itemKey is null it means we are creating new data
+                              setState(() {
+                                _itemController.text = "";
+                                _qtyController.text = "";
+                                selectedValue = null;
+                              });
+
                               box.add(dataModel);
                               Navigator.of(context).pop();
                             } else {

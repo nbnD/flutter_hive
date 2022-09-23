@@ -11,8 +11,8 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   Directory directory = await pathProvider.getApplicationDocumentsDirectory();
   Hive.init(directory.path);
-   Hive.registerAdapter(DataModelAdapter());
-   await Hive.openBox('hive_box');
+  Hive.registerAdapter(DataModelAdapter());
+  await Hive.openBox('hive_box');
   runApp(const MyApp());
 }
 
